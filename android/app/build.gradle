@@ -1,0 +1,55 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    id "dev.flutter.flutter-gradle-plugin"
+    id "com.google.gms.google-services" // ✅ Fixed duplication
+}
+
+dependencies {
+    // Import the BoM for the Firebase platform
+    implementation platform("com.google.firebase:firebase-bom:33.9.0") // ✅ Ensure it's the latest
+
+    // Add Firebase dependencies (no need to specify versions when using BoM)
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-analytics")
+
+    // Google Play services for authentication
+    implementation("com.google.android.gms:play-services-auth:21.3.0")
+
+    // Fix for Java 8 compatibility issues
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
+}
+
+android {
+    namespace = "com.example.split_wise"
+    compileSdk = flutter.compileSdkVersion
+    ndkVersion = flutter.ndkVersion
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+        coreLibraryDesugaringEnabled true
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8" // ✅ Fixed syntax
+    }
+
+    defaultConfig {
+        applicationId = "com.example.split_wise"
+        minSdk = 23
+        targetSdk = flutter.targetSdkVersion
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
+    }
+
+    buildTypes {
+        release {
+            signingConfig = signingConfigs.debug
+        }
+    }
+}
+
+flutter {
+    source = "../.."
+}
