@@ -8,7 +8,6 @@ import 'package:animate_do/animate_do.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
-import 'package:http/http.dart' as http;
 import 'package:split_wise/Home%20screen/upi%20payment.dart';
 
 import '../Helper/FCM Service.dart';
@@ -352,9 +351,9 @@ class _SplitDetailScreenState extends State<SplitDetailScreen> {
                                 elevation: 4,
                                 shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10)),
+                                tooltip: 'Generate PDF',
                                 child: Icon(Icons.picture_as_pdf,
                                     color: Colors.white, size: screenWidth * 0.05),
-                                tooltip: 'Generate PDF',
                               ),
                             ),
                           ],
@@ -381,7 +380,7 @@ class _SplitDetailScreenState extends State<SplitDetailScreen> {
         onPressed: _sendReminder,
         backgroundColor: const Color(0xFF234567),
         elevation: 6,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         icon: Icon(LucideIcons.bell, color: Colors.white, size: screenWidth * 0.06),
         label: Text("Remind All",
             style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600)),
@@ -399,7 +398,7 @@ class _SplitDetailScreenState extends State<SplitDetailScreen> {
       backgroundColor: Color(0xFF234567),
       centerTitle: true,
       title: Text(
-        'Settle Up',
+        'Split Up',
         style: GoogleFonts.lobster(
           textStyle: const TextStyle(
             color: Colors.white,
@@ -836,37 +835,37 @@ class _SplitDetailScreenState extends State<SplitDetailScreen> {
                 ),
                 if (participantUid != userId && netAmount > 0) ...[
                   SizedBox(width: screenWidth * 0.03),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => UPIPaymentScreen(
-                            splitId: widget.splitId,
-                            amountToPay: netAmount,
-                          ),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: screenWidth * 0.02,
-                        vertical: screenHeight * 0.005,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF234567),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        "Pay Now",
-                        style: GoogleFonts.poppins(
-                          fontSize: screenWidth * 0.035,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
+                  // GestureDetector(
+                  //   onTap: () {
+                  //     Navigator.push(
+                  //       context,
+                  //       MaterialPageRoute(
+                  //         builder: (context) => UPIPaymentScreen(
+                  //           splitId: widget.splitId,
+                  //           amountToPay: netAmount,
+                  //         ),
+                  //       ),
+                  //     );
+                  //   },
+                  //   child: Container(
+                  //     padding: EdgeInsets.symmetric(
+                  //       horizontal: screenWidth * 0.02,
+                  //       vertical: screenHeight * 0.005,
+                  //     ),
+                  //     decoration: BoxDecoration(
+                  //       color: const Color(0xFF234567),
+                  //       borderRadius: BorderRadius.circular(6),
+                  //     ),
+                  //     child: Text(
+                  //       "Pay Now",
+                  //       style: GoogleFonts.poppins(
+                  //         fontSize: screenWidth * 0.035,
+                  //         fontWeight: FontWeight.w600,
+                  //         color: Colors.white,
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ],
             ),

@@ -20,10 +20,11 @@ class SpendAnalyzerScreen extends StatefulWidget {
 }
 
 class _SpendAnalyzerScreenState extends State<SpendAnalyzerScreen> {
-  String _timePeriod = 'Month';
-  String _chartType = 'Spent';
+  String _timePeriod = 'Month'; // Options: 'Day', 'Month', 'Custom Range', 'Multi-Month'
   String _selectedChartType = 'Pie';
   DateTime _selectedDate = DateTime.now();
+  DateTimeRange? _customDateRange;
+  List<DateTime> _selectedMonths = [DateTime.now()];
   String _selectedStatisticsCategory = 'Grocery';
   int _touchedIndex = -1;
 
@@ -77,7 +78,7 @@ class _SpendAnalyzerScreenState extends State<SpendAnalyzerScreen> {
       ),
       backgroundColor: Colors.grey.shade50,
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(screenSize.width * 0.04), // 4% of screen width
+        padding: EdgeInsets.all(screenSize.width * 0.04),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -115,7 +116,7 @@ class _SpendAnalyzerScreenState extends State<SpendAnalyzerScreen> {
                           underline: const SizedBox(),
                           dropdownColor: Colors.grey.shade50,
                           icon: Icon(LucideIcons.chevronDown, color: Colors.grey.shade700, size: screenSize.width * 0.04),
-                          items: <String>['Day', 'Month'].map<DropdownMenuItem<String>>((String value) {
+                          items: <String>['Day', 'Month', 'Custom Range', 'Multi-Month'].map<DropdownMenuItem<String>>((String value) {
                             return DropdownMenuItem<String>(
                               value: value,
                               child: Text(value, style: TextStyle(color: Colors.grey.shade700, fontSize: screenSize.width * 0.035)),
@@ -124,32 +125,16 @@ class _SpendAnalyzerScreenState extends State<SpendAnalyzerScreen> {
                           onChanged: (String? newValue) {
                             setState(() {
                               _timePeriod = newValue!;
+                              if (_timePeriod == 'Custom Range') {
+                                _showDateRangePicker(context);
+                              } else if (_timePeriod == 'Multi-Month') {
+                                _showMultiMonthPicker(context);
+                              }
                             });
                           },
                         ),
                         SizedBox(width: screenSize.width * 0.02),
-                        Text(
-                          DateFormat('yyyy-MM-dd').format(_selectedDate),
-                          style: TextStyle(color: Colors.grey.shade700, fontSize: screenSize.width * 0.035),
-                        ),
-                        IconButton(
-                          icon: Icon(LucideIcons.calendar, color: Colors.grey.shade700, size: screenSize.width * 0.04),
-                          onPressed: () async {
-                            final DateTime? pickedDate = await showDatePicker(
-                              context: context,
-                              initialDate: _selectedDate,
-                              firstDate: DateTime(2000),
-                              lastDate: DateTime(2025),
-                            );
-                            if (pickedDate != null && pickedDate != _selectedDate) {
-                              setState(() {
-                                _selectedDate = pickedDate;
-                              });
-                            }
-                          },
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                        ),
+                        _buildDateFilterDisplay(screenSize),
                       ],
                     ),
                   ),
@@ -167,29 +152,138 @@ class _SpendAnalyzerScreenState extends State<SpendAnalyzerScreen> {
     );
   }
 
+  Widget _buildDateFilterDisplay(Size screenSize) {
+    if (_timePeriod == 'Custom Range' && _customDateRange != null) {
+      return Row(
+        children: [
+          Text(
+            '${DateFormat('yyyy-MM-dd').format(_customDateRange!.start)} - ${DateFormat('yyyy-MM-dd').format(_customDateRange!.end)}',
+            style: TextStyle(color: Colors.grey.shade700, fontSize: screenSize.width * 0.035),
+          ),
+          IconButton(
+            icon: Icon(LucideIcons.calendar, color: Colors.grey.shade700, size: screenSize.width * 0.04),
+            onPressed: () => _showDateRangePicker(context),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+        ],
+      );
+    } else if (_timePeriod == 'Multi-Month' && _selectedMonths.isNotEmpty) {
+      return Row(
+        children: [
+          Text(
+            '${_selectedMonths.length} Months',
+            style: TextStyle(color: Colors.grey.shade700, fontSize: screenSize.width * 0.035),
+          ),
+          IconButton(
+            icon: Icon(LucideIcons.calendar, color: Colors.grey.shade700, size: screenSize.width * 0.04),
+            onPressed: () => _showMultiMonthPicker(context),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+        ],
+      );
+    } else {
+      return Row(
+        children: [
+          Text(
+            DateFormat('yyyy-MM-dd').format(_selectedDate),
+            style: TextStyle(color: Colors.grey.shade700, fontSize: screenSize.width * 0.035),
+          ),
+          IconButton(
+            icon: Icon(LucideIcons.calendar, color: Colors.grey.shade700, size: screenSize.width * 0.04),
+            onPressed: () async {
+              final DateTime? pickedDate = await showDatePicker(
+                context: context,
+                initialDate: _selectedDate,
+                firstDate: DateTime(2000),
+                lastDate: DateTime(2025),
+              );
+              if (pickedDate != null && pickedDate != _selectedDate) {
+                setState(() {
+                  _selectedDate = pickedDate;
+                });
+              }
+            },
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+        ],
+      );
+    }
+  }
+
+  void _showDateRangePicker(BuildContext context) async {
+    final DateTimeRange? pickedRange = await showDateRangePicker(
+      context: context,
+      initialDateRange: _customDateRange ?? DateTimeRange(start: DateTime.now(), end: DateTime.now()),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2025),
+    );
+    if (pickedRange != null) {
+      setState(() {
+        _customDateRange = pickedRange;
+      });
+    }
+  }
+
+  void _showMultiMonthPicker(BuildContext context) async {
+    final List<DateTime> pickedMonths = await showDialog(
+      context: context,
+      builder: (context) => MultiMonthPicker(
+        initialMonths: _selectedMonths,
+        firstDate: DateTime(2000),
+        lastDate: DateTime(2025),
+      ),
+    ) ?? _selectedMonths;
+    setState(() {
+      _selectedMonths = pickedMonths;
+    });
+  }
+
   Map<String, double> _getSpendingForTimePeriod(Map<String, Map<String, dynamic>> categoryData) {
+    print('Category Data: $categoryData'); // Debug input data
     Map<String, double> spending = {};
     for (String category in categories) {
-      double totalPaid = categoryData[category]?['totalPaid']?.toDouble() ?? 0.0;
+      double averageAmount = categoryData[category]?['averageAmount']?.toDouble() ?? 0.0;
       DateTime? lastInvolved = categoryData[category]?['lastInvolved'] as DateTime?;
-      if (_timePeriod == 'Day' && lastInvolved != null) {
-        if (lastInvolved.day == _selectedDate.day &&
-            lastInvolved.month == _selectedDate.month &&
-            lastInvolved.year == _selectedDate.year) {
-          spending[category] = totalPaid;
-        } else {
-          spending[category] = 0.0;
-        }
-      } else {
-        if (lastInvolved != null &&
-            lastInvolved.month == _selectedDate.month &&
-            lastInvolved.year == _selectedDate.year) {
-          spending[category] = totalPaid;
-        } else {
-          spending[category] = 0.0;
+      print('$category - Average: $averageAmount, Last Involved: $lastInvolved'); // Debug each category
+
+      // Default to showing average amount
+      spending[category] = averageAmount;
+
+      if (lastInvolved != null) {
+        switch (_timePeriod) {
+          case 'Day':
+            if (lastInvolved.day != _selectedDate.day ||
+                lastInvolved.month != _selectedDate.month ||
+                lastInvolved.year != _selectedDate.year) {
+              spending[category] = 0.0;
+            }
+            break;
+          case 'Month':
+            if (lastInvolved.month != _selectedDate.month || lastInvolved.year != _selectedDate.year) {
+              spending[category] = 0.0;
+            }
+            break;
+          case 'Custom Range':
+            if (_customDateRange != null &&
+                (lastInvolved.isBefore(_customDateRange!.start) ||
+                    lastInvolved.isAfter(_customDateRange!.end.add(const Duration(days: 1))))) {
+              spending[category] = 0.0;
+            }
+            break;
+          case 'Multi-Month':
+            bool inSelectedMonths = _selectedMonths.any((month) =>
+            lastInvolved.month == month.month && lastInvolved.year == month.year);
+            if (!inSelectedMonths) {
+              spending[category] = 0.0;
+            }
+            break;
         }
       }
     }
+    print('Filtered Spending: $spending'); // Debug output
     return spending;
   }
 
@@ -488,7 +582,17 @@ class _SpendAnalyzerScreenState extends State<SpendAnalyzerScreen> {
 
   List<PieChartSectionData> _generatePieChartSections(Map<String, double> spending, List<String> categories) {
     double totalSpending = spending.values.fold(0, (sum, amount) => sum + amount);
-    if (totalSpending == 0) return [];
+    if (totalSpending == 0) {
+      return [
+        PieChartSectionData(
+          value: 1,
+          color: Colors.grey,
+          radius: MediaQuery.of(context).size.width * 0.1,
+          title: 'No Data',
+          titleStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+        )
+      ];
+    }
 
     var sortedEntries = spending.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
 
@@ -517,6 +621,16 @@ class _SpendAnalyzerScreenState extends State<SpendAnalyzerScreen> {
 
   List<BarChartGroupData> _generateBarChartGroups(Map<String, double> spending, List<String> categories) {
     var sortedEntries = spending.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+    if (sortedEntries.isEmpty || sortedEntries.every((entry) => entry.value == 0)) {
+      return [
+        BarChartGroupData(
+          x: 0,
+          barRods: [
+            BarChartRodData(toY: 1, color: Colors.grey, width: MediaQuery.of(context).size.width * 0.05),
+          ],
+        )
+      ];
+    }
 
     return sortedEntries.asMap().entries.map((entry) {
       int index = entry.key;
@@ -556,6 +670,14 @@ class _SpendAnalyzerScreenState extends State<SpendAnalyzerScreen> {
 
   LineChartBarData _generateLineChartBarData(Map<String, double> spending, List<String> sortedCategories) {
     var sortedEntries = spending.entries.toList()..sort((a, b) => b.value.compareTo(a.value));
+    if (sortedEntries.isEmpty || sortedEntries.every((entry) => entry.value == 0)) {
+      return LineChartBarData(
+        spots: [const FlSpot(0, 0)],
+        color: Colors.grey,
+        barWidth: 2,
+        dotData: FlDotData(show: false),
+      );
+    }
 
     final List<FlSpot> spots = sortedEntries.asMap().entries.map((entry) {
       int index = entry.key;
@@ -823,39 +945,157 @@ class _SpendAnalyzerScreenState extends State<SpendAnalyzerScreen> {
 
   List<FlSpot> _generateLineChartDataForCategory(Map<String, Map<String, dynamic>> categoryData) {
     List<FlSpot> spots = [];
-    double totalPaid = categoryData[_selectedStatisticsCategory]?['totalPaid']?.toDouble() ?? 0.0;
+    double averageAmount = categoryData[_selectedStatisticsCategory]?['averageAmount']?.toDouble() ?? 0.0;
     DateTime? lastInvolved = categoryData[_selectedStatisticsCategory]?['lastInvolved'] as DateTime?;
 
-    if (lastInvolved != null && totalPaid > 0) {
-      int daysInMonth = DateTime(_selectedDate.year, _selectedDate.month + 1, 0).day;
-      double dailyAverage = totalPaid / daysInMonth;
+    if (_timePeriod == 'Custom Range' && _customDateRange != null) {
+      int daysInRange = _customDateRange!.end.difference(_customDateRange!.start).inDays + 1;
+      double dailyAverage = averageAmount / daysInRange;
       for (int i = 0; i < 6; i++) {
-        double x = i * (daysInMonth / 5);
-        double y = lastInvolved.day > x ? dailyAverage * (x + 1) : totalPaid;
+        double x = i * (daysInRange / 5);
+        double y = lastInvolved != null && lastInvolved.isAfter(_customDateRange!.start.add(Duration(days: x.toInt())))
+            ? dailyAverage * (x + 1)
+            : averageAmount;
         spots.add(FlSpot(x, y));
       }
+    } else if (_timePeriod == 'Multi-Month' && _selectedMonths.isNotEmpty) {
+      int totalMonths = _selectedMonths.length;
+      double monthlyAverage = averageAmount / totalMonths;
+      for (int i = 0; i < totalMonths && i < 6; i++) {
+        spots.add(FlSpot(i.toDouble(), monthlyAverage * (i + 1)));
+      }
     } else {
-      spots = List.generate(6, (index) => FlSpot(index.toDouble(), 0));
+      int daysInMonth = DateTime(_selectedDate.year, _selectedDate.month + 1, 0).day;
+      double dailyAverage = averageAmount / daysInMonth;
+      for (int i = 0; i < 6; i++) {
+        double x = i * (daysInMonth / 5);
+        double y = lastInvolved != null && lastInvolved.day > x ? dailyAverage * (x + 1) : averageAmount;
+        spots.add(FlSpot(x, y));
+      }
     }
-    return spots;
+    return spots.isEmpty ? List.generate(6, (index) => FlSpot(index.toDouble(), 0)) : spots;
   }
 
   SideTitles _bottomTitles(Size screenSize) {
-    int daysInMonth = DateTime(_selectedDate.year, _selectedDate.month + 1, 0).day;
-    return SideTitles(
-      showTitles: true,
-      interval: daysInMonth / 5,
-      getTitlesWidget: (value, meta) {
-        int day = value.toInt() + 1;
-        if (day <= daysInMonth) {
+    if (_timePeriod == 'Custom Range' && _customDateRange != null) {
+      int daysInRange = _customDateRange!.end.difference(_customDateRange!.start).inDays + 1;
+      return SideTitles(
+        showTitles: true,
+        interval: daysInRange / 5,
+        getTitlesWidget: (value, meta) {
+          int dayOffset = value.toInt();
+          DateTime date = _customDateRange!.start.add(Duration(days: dayOffset));
           return Text(
-            'Day $day',
+            DateFormat('MM-dd').format(date),
             style: TextStyle(color: Colors.grey.shade700, fontSize: screenSize.width * 0.025),
           );
-        }
-        return const Text('');
-      },
-      reservedSize: screenSize.height * 0.03,
+        },
+        reservedSize: screenSize.height * 0.03,
+      );
+    } else if (_timePeriod == 'Multi-Month' && _selectedMonths.isNotEmpty) {
+      return SideTitles(
+        showTitles: true,
+        interval: 1,
+        getTitlesWidget: (value, meta) {
+          int index = value.toInt();
+          if (index >= 0 && index < _selectedMonths.length) {
+            return Text(
+              DateFormat('MMM yyyy').format(_selectedMonths[index]),
+              style: TextStyle(color: Colors.grey.shade700, fontSize: screenSize.width * 0.025),
+            );
+          }
+          return const Text('');
+        },
+        reservedSize: screenSize.height * 0.03,
+      );
+    } else {
+      int daysInMonth = DateTime(_selectedDate.year, _selectedDate.month + 1, 0).day;
+      return SideTitles(
+        showTitles: true,
+        interval: daysInMonth / 5,
+        getTitlesWidget: (value, meta) {
+          int day = value.toInt() + 1;
+          if (day <= daysInMonth) {
+            return Text(
+              'Day $day',
+              style: TextStyle(color: Colors.grey.shade700, fontSize: screenSize.width * 0.025),
+            );
+          }
+          return const Text('');
+        },
+        reservedSize: screenSize.height * 0.03,
+      );
+    }
+  }
+}
+
+class MultiMonthPicker extends StatefulWidget {
+  final List<DateTime> initialMonths;
+  final DateTime firstDate;
+  final DateTime lastDate;
+
+  const MultiMonthPicker({
+    super.key,
+    required this.initialMonths,
+    required this.firstDate,
+    required this.lastDate,
+  });
+
+  @override
+  State<MultiMonthPicker> createState() => _MultiMonthPickerState();
+}
+
+class _MultiMonthPickerState extends State<MultiMonthPicker> {
+  late List<DateTime> _selectedMonths;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedMonths = List.from(widget.initialMonths);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Select Months'),
+      content: SizedBox(
+        width: double.maxFinite,
+        height: 300,
+        child: ListView.builder(
+          itemCount: (widget.lastDate.year - widget.firstDate.year + 1) * 12,
+          itemBuilder: (context, index) {
+            final year = widget.firstDate.year + (index ~/ 12);
+            final month = (index % 12) + 1;
+            final date = DateTime(year, month);
+            if (date.isAfter(widget.lastDate)) return const SizedBox.shrink();
+            final isSelected = _selectedMonths.any((d) => d.year == year && d.month == month);
+
+            return CheckboxListTile(
+              title: Text(DateFormat('MMMM yyyy').format(date)),
+              value: isSelected,
+              onChanged: (bool? value) {
+                setState(() {
+                  if (value == true) {
+                    _selectedMonths.add(date);
+                  } else {
+                    _selectedMonths.removeWhere((d) => d.year == year && d.month == month);
+                  }
+                });
+              },
+            );
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, widget.initialMonths),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context, _selectedMonths),
+          child: const Text('OK'),
+        ),
+      ],
     );
   }
 }

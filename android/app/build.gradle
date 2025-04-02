@@ -2,12 +2,19 @@ plugins {
     id "com.android.application"
     id "kotlin-android"
     id "dev.flutter.flutter-gradle-plugin"
-    id "com.google.gms.google-services" // ✅ Fixed duplication
+    id "com.google.gms.google-services"
+}
+// Load keystore properties from key.properties
+def keystorePropertiesFile = rootProject.file("key.properties")
+def keystoreProperties = new Properties()
+
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
 dependencies {
     // Import the BoM for the Firebase platform
-    implementation platform("com.google.firebase:firebase-bom:33.9.0") // ✅ Ensure it's the latest
+    implementation platform("com.google.firebase:firebase-bom:33.10.0") //
 
     // Add Firebase dependencies (no need to specify versions when using BoM)
     implementation("com.google.firebase:firebase-auth")
@@ -21,8 +28,8 @@ dependencies {
 }
 
 android {
-    namespace = "com.example.split_wise"
-    compileSdk = flutter.compileSdkVersion
+    namespace = "com.ad.split_up"
+    compileSdk = 35
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -36,16 +43,30 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.split_wise"
+        applicationId = "com.ad.split_up"
         minSdk = 23
         targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
+        versionCode = 4
+        versionName = 1.3
+        ndk {
+            debugSymbolLevel 'FULL'
+        }
     }
 
+    signingConfigs {
+        release {
+            keyAlias = keystoreProperties['keyAlias']
+            keyPassword = keystoreProperties['keyPassword']
+            storeFile = keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+            storePassword = keystoreProperties['storePassword']
+        }
+    }
     buildTypes {
         release {
-            signingConfig = signingConfigs.debug
+            signingConfig signingConfigs.release
+            ndk {
+                debugSymbolLevel 'FULL'
+            }
         }
     }
 }

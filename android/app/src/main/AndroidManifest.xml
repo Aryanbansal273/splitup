@@ -18,7 +18,7 @@
 
     <application
 
-        android:label="split_wise"
+        android:label="Split Up"
         android:icon="@mipmap/ic_launcher">
 
 
@@ -40,13 +40,16 @@
             <meta-data
                 android:name="com.google.android.gms.auth.api.signin"
                 android:value="true" />
+            <meta-data
+                android:name="io.flutter.embedding.android.EnableImpeller"
+                android:value="true" />
 
             <!-- Intent filter to handle deep links for Google Sign-In -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="com.example.split_wise" />
+                <data android:scheme="com.ad.split_up" />
             </intent-filter>
 
             <intent-filter android:autoVerify="true"

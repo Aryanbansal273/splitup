@@ -1,13 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:split_wise/Profile/manage_friends.dart';
 import 'package:split_wise/Profile/setting.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../Search/search_bar.dart';
 import '../login signup/login_screen.dart';
+import 'about_us_screen.dart';
 import 'all expense history detals.dart';
 import 'editprofile.dart';
 
@@ -77,7 +78,27 @@ class _ProfileOverviewScreenState extends State<ProfileOverviewScreen> {
               fontSize: screenWidth * 0.045,
             ),
           ),
-          backgroundColor: const Color(0xFF234567),
+          flexibleSpace: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFF1A3C6D), // Base: Deep neon blue
+                  Color(0xFF0A2A4D), // Darker neon blue (shadowy tone)
+                  Color(0xFF1A3C6D),// Neon purple
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(screenWidth * 0.05)),
+              boxShadow: [
+                BoxShadow(
+                  color: Color(0xFF1A3C6D).withOpacity(0.5),
+                  blurRadius: 10.0,
+                  spreadRadius: 2.0,
+                ),
+              ],
+            ),
+          ),
           elevation: 4,
           centerTitle: true,
           shape: RoundedRectangleBorder(
@@ -142,7 +163,7 @@ class _ProfileOverviewScreenState extends State<ProfileOverviewScreen> {
                 height: screenHeight * 0.18,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Colors.teal.shade700, Colors.teal.shade400],
+                    colors: [Color(0xFF0288D1), Colors.teal.shade400],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -359,9 +380,9 @@ class _ProfileOverviewScreenState extends State<ProfileOverviewScreen> {
               );
             case 3:
               return _buildOptionTile(
-                icon: Icons.info,
+                icon: CupertinoIcons.info,
                 title: "About Us",
-                onTap: () => _showAboutUsDialog(context),
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AboutUsScreen())),
                 iconColor: const Color(0xFF6A1B9A),
                 backgroundColor: Colors.white,
                 screenWidth: screenWidth,
@@ -390,15 +411,16 @@ class _ProfileOverviewScreenState extends State<ProfileOverviewScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: Colors.blue.shade50,
         title: Text("About Us", style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: screenWidth * 0.06)),
         content: Text(
-          "Welcome to Settleup, your premier solution for seamlessly managing expenses and equitably dividing bills among friends. Designed with precision by our adept developers, Aryan Bansal and Depankar Singh, SplitWise ensures a sophisticated yet effortless experience in financial coordination. For further details or assistance, please feel free to reach out to us at support@settleup.com. Should you encounter any issues or wish to lodge a complaint, we encourage you to raise your concerns via the same email address, where our dedicated team stands ready to assist you.",
+          "Welcome to Settleup, your premier solution for seamlessly managing expenses and equitably dividing bills among friends. Designed with precision by our adept developers, Aryan Bansal and Depankar Singh, SplitWise ensures a sophisticated yet effortless experience in financial coordination. For further details or assistance, please feel free to reach out to us at ad.dev8b@gmail.com. Should you encounter any issues or wish to lodge a complaint, we encourage you to raise your concerns via the same email address, where our dedicated team stands ready to assist you.",
           style: GoogleFonts.poppins(fontSize: screenWidth * 0.04),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text("Close", style: GoogleFonts.poppins(color: Colors.teal, fontSize: screenWidth * 0.04)),
+            child: Text("Close", style: GoogleFonts.poppins(color: Colors.blue.shade500, fontSize: screenWidth * 0.04)),
           ),
         ],
       ),

@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../split/friends.dart';
+import 'package:split_wise/login%20signup/login_screen.dart';
 import 'login and signup.dart';
 
 class IntroPage extends StatefulWidget {
@@ -17,17 +17,17 @@ class _IntroPageState extends State<IntroPage> {
 
   final List<Map<String, String>> _pages = [
     {
-      "image": "assets/logo/icon.png",
+      "image": "assets/logo/icon.jpg",
       "title": "Welcome to Our App",
       "subtitle": "Split Bills, Simplify Life – Effortless Expense Sharing"
     },
     {
-      "image": "assets/logo/icon.png",
+      "image": "assets/logo/wel.jpg",
       "title": "Stay Wealthy",
       "subtitle": "Fair Shares, Happy Affairs – Simplify Splitting Expenses!"
     },
     {
-      "image": "assets/logo/icon.png",
+      "image": "assets/logo/wel2.jpg",
       "title": "Achieve Your Split",
       "subtitle": "Empowering Your Financial Journey, One Split at a Time"
     },
@@ -60,7 +60,7 @@ class _IntroPageState extends State<IntroPage> {
 
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => LoginScreen()),
+      MaterialPageRoute(builder: (context) => LoginPage()),
     );
   }
 

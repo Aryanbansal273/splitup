@@ -1,12 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:video_player/video_player.dart';
-import 'package:split_wise/login%20signup/welcome.dart'; // Import Welcome Page
-import 'package:split_wise/login%20signup/login_screen.dart'; // Import LoginPage
-import 'package:split_wise/bottom_bar.dart'; // Import BottomBar
-import 'package:firebase_auth/firebase_auth.dart'; // Import Firebase Auth
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:split_wise/bottom_bar.dart';
+import 'package:split_wise/login%20signup/welcome.dart';
+import 'package:video_player/video_player.dart';
 
-import 'login and signup.dart'; // Import Shared Preferences
+import '../Helper/checkforupdate.dart';
+import 'login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -22,24 +22,25 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-
+      checkForUpdate();
     // Initialize the video player controller
-    _videoController =
-        VideoPlayerController.asset('assets/animation/56qRH8Xl3ih8DWE25i.mp4');
+    _videoController = VideoPlayerController.asset('assets/animation/56qRH8Xl3ih8DWE25i.mp4');
     _initializeVideoFuture = _videoController.initialize();
     _videoController.setLooping(true);
     _videoController.play();
 
-    // Check user state and navigate after 4 seconds
-    Future.delayed(const Duration(seconds: 4), () {
-      _navigateBasedOnUserState();
-    });
+    // Navigate after delay, but only if mounted
+    _navigateBasedOnUserState();
   }
 
   Future<void> _navigateBasedOnUserState() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final prefs = await SharedPreferences.getInstance();
     final bool isFirstTime = prefs.getBool('isFirstTime') ?? true;
     final User? user = FirebaseAuth.instance.currentUser;
+    await Future.delayed(const Duration(seconds: 2));
+
+    // Check if the widget is still mounted before navigating
+    if (!mounted) return;
 
     if (isFirstTime) {
       // First time user: Navigate to LoginPage and mark it as not first time
@@ -62,6 +63,7 @@ class _SplashScreenState extends State<SplashScreen> {
       );
     }
   }
+
 
   @override
   void dispose() {
